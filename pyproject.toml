@@ -15,7 +15,7 @@ packages = [
 readme = "README.md"
 homepage = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
 repository = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
-documentation = "https://prompt-toolkit-action-completer.readthedocs.io"
+documentation = "https://prompt-toolkit-action-completer-action-completer.readthedocs.io"
 keywords = [
     "prompt-toolkit",
     "prompt",
@@ -57,9 +57,9 @@ exclude = [
 [tool.poetry.dependencies]
 python = "^3.7"
 prompt-toolkit = "^3.0.7"
-attrs = "^21.4.0" # Changed from pinned version to a compatible range
+attrs = "^21.4.0"
 fuzzywuzzy = {extras = ["speedup"], version = "^0.18.0"}
-typing-extensions = "^3.7.4"
+typing-extensions = ">=3.7.4"
 
 [tool.poetry.dev-dependencies]
 black = "^24.0"
@@ -188,3 +188,4 @@ source = [
 
 [tool.coverage.report]
 show_missing = true
+
