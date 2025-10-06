@@ -181,23 +181,19 @@ def get_dynamic_value(
             default
     """
 
-    if isinstance(value, str):
-        return format_dynamic_value(value, text)
-    elif isinstance(value, FormattedText):
-        return FormattedText(
-            [
-                (  # type: ignore
-                    tuple_style,
-                    format_dynamic_value(tuple_text, text),
-                    *tuple_args,
-                )
-                for (tuple_style, tuple_text, *tuple_args) in value
-            ]
-        )
-    elif callable(value):
-        return value(source, text)
-
-    return default
+    formats: Dict[str, str] = {"completion": text}
+    
+        result = template
+        for format_key, format_value in formats.items():
+            try:
+                # Escape any braces in format_value to prevent them from being 
+                # interpreted as format specifiers
+                safe_value = format_value.replace('{', '{{').replace('}', '}}')
+                result = result.format(**{format_key: safe_value})
+            except (ValueError, IndexError, KeyError):
+                pass
+            
+        return result
 
 
 def get_best_choice(choices: Iterable[str], user_value: str) -> Optional[str]:
