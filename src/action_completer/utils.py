@@ -130,6 +130,7 @@ def format_dynamic_value(template: str, text: str) -> str:
     Returns:
         str: The formatted text
     """
+    print(f"DEBUG: template={repr(template)}, text={repr(text)}")
 
     formats: Dict[str, str] = {"completion": text}
 
@@ -137,7 +138,7 @@ def format_dynamic_value(template: str, text: str) -> str:
     for format_key, format_value in formats.items():
         try:
             result = result.format(**{format_key: format_value})
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, KeyError):
             pass
 
     return result
