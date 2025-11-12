@@ -28,6 +28,10 @@ Attributes:
     ActionParamCallable_T (typing.Type): Defines the allowable type for callable
         completions and validation.
 
+    ActionParamEmpty_T (typing.Type): Defines the allowable type for empty parameter
+        completions. This is used with the Empty sentinel to show completions with
+        only help text (display_meta) but no actual completion text.
+
     ActionParamSource_T (typing.Type): Defines the allowable types for action parameter
         sources that can be completed and validated. This is a union of previously
         defined action param types.
@@ -43,6 +47,9 @@ Attributes:
         allowable types for optionally lazy evaluated strings or instances of
         :class:`~prompt_toolkit.formatted_text.FormattedText`. This is either just an
         instance or a callable that results in an instance.
+
+    Empty: A sentinel object used as the source for action parameters that should
+        display an empty completion with help text only.
 """
 
 import re
@@ -51,11 +58,9 @@ from typing import (
     Any,
     Callable,
     Dict,
-    FrozenSet,
     Iterable,
     List,
     Optional,
-    Set,
     Tuple,
     Type,
     Union,
@@ -69,6 +74,27 @@ from prompt_toolkit.validation import Validator
 
 _decorator_staging: Dict[object, Optional[List["ActionParam"]]] = {}
 
+
+class _EmptyType:
+    """Sentinel class for empty action parameter completions.
+
+    This type is used to indicate that a parameter should show an empty completion
+    with only the help string (display_meta) visible, but no actual text.
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __repr__(self) -> str:
+        return "Empty"
+
+
+Empty = _EmptyType()
+
 ActionCompletable_T = Union["ActionGroup", "Action", "ActionParam"]
 ActionContext_T = Tuple[
     Optional["ActionGroup"], Optional[str], Union["ActionGroup", "Action"], List[str]
@@ -77,11 +103,13 @@ ActionParamBasic_T = str
 ActionParamCallable_T = Callable[["Action", "ActionParam", str], Iterable[str]]
 ActionParamCompleter_T = Type[Completer]
 ActionParamIterable_T = Union[List[str], Tuple[str]]
+ActionParamEmpty_T = Type[_EmptyType]
 ActionParamSource_T = Union[
     ActionParamBasic_T,
     ActionParamIterable_T,
     ActionParamCompleter_T,
     ActionParamCallable_T,
+    ActionParamEmpty_T,
 ]
 ActionParamValidator_T = Union[
     Validator, Callable[["ActionParam", str, List[str]], Any]

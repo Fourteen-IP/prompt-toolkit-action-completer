@@ -5,18 +5,16 @@
 """Contains utility functions used throughout various points of the module."""
 
 import re
-from typing import Any, Dict, Generator, Iterable, List, Optional, Tuple, Union
-
+from typing import Dict, Generator, Iterable, List, Optional, Union
 from fuzzywuzzy import process as fuzzy_process
 from fuzzywuzzy import utils as fuzzy_utils
-from prompt_toolkit.formatted_text import FormattedText, to_formatted_text
+from prompt_toolkit.formatted_text import FormattedText
 
 from .types import (
     Action,
     ActionCompletable_T,
     ActionContext_T,
     ActionGroup,
-    ActionParam,
     LazyText_T,
 )
 
@@ -136,9 +134,9 @@ def format_dynamic_value(template: str, text: str) -> str:
     result = template
     for format_key, format_value in formats.items():
         try:
-            # Escape any braces in format_value to prevent them from being 
+            # Escape any braces in format_value to prevent them from being
             # interpreted as format specifiers
-            safe_value = format_value.replace('{', '{{').replace('}', '}}')
+            safe_value = format_value.replace("{", "{{").replace("}", "}}")
             result = result.format(**{format_key: safe_value})
         except (ValueError, IndexError, KeyError):
             pass

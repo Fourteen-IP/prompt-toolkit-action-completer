@@ -179,9 +179,9 @@ class ActionValidator(Validator):
                 action parameter
         """
 
-        assert isinstance(
-            action_param.source, str
-        ), f"basic param validation can only handle a string source, {action_param!r}"
+        assert isinstance(action_param.source, str), (
+            f"basic param validation can only handle a string source, {action_param!r}"
+        )
 
         self._validate_choices(
             [action_param.source], param_value, cursor_position=cursor_position
@@ -208,7 +208,13 @@ class ActionValidator(Validator):
                 action parameter
         """
 
-        assert isinstance(action_param.source, (list, tuple,)), (
+        assert isinstance(
+            action_param.source,
+            (
+                list,
+                tuple,
+            ),
+        ), (
             "iterable param validation can only handle hashable iterables, "
             f"{action_param.source!r}"
         )
@@ -254,6 +260,36 @@ class ActionValidator(Validator):
             param_value,
             cursor_position=cursor_position,
         )
+
+    def _validate_empty_param(
+        self,
+        action: Action,
+        action_param: ActionParam,
+        param_value: str,
+        cursor_position: int = 0,
+    ):
+        """Validate a given Empty parameter.
+
+        Empty parameters accept any value since they're meant to be free-form input
+        with just a help hint.
+
+        Args:
+            action (Action): The action the given parameter applies to
+            action_param (ActionParam): The action parameter to base validation off of
+            param_value (str): The value to validate against the given action parameter
+            cursor_position (int, optional): The current cursor position in the prompt
+                buffer. Defaults to 0.
+        """
+
+        from .types import Empty
+
+        assert action_param.source is Empty, (
+            "empty param validation will only handle parameters with source=Empty, "
+            f"{action_param.source!r}"
+        )
+
+        # Empty parameters accept any value, so no validation needed
+        pass
 
     def _validate_custom_validators(
         self,
@@ -399,7 +435,11 @@ class ActionValidator(Validator):
 
         param_validator = None
 
-        if isinstance(action_param.source, str):
+        from .types import Empty
+
+        if action_param.source is Empty:
+            param_validator = self._validate_empty_param
+        elif isinstance(action_param.source, str):
             param_validator = self._validate_basic_param
         elif isinstance(
             action_param.source,
@@ -453,9 +493,9 @@ class ActionValidator(Validator):
                 specifies it requires
         """
 
-        assert (
-            parent_name and len(parent_name) > 0
-        ), f"parent name for action {action!r} was not given"
+        assert parent_name and len(parent_name) > 0, (
+            f"parent name for action {action!r} was not given"
+        )
 
         if action.params is None or len(action.params) <= 0:
             return
