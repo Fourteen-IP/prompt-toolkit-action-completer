@@ -65,14 +65,10 @@ from functools import partial
 from typing import (
     Any,
     Callable,
-    Dict,
-    FrozenSet,
     Generator,
     Iterable,
     List,
     Optional,
-    Set,
-    Tuple,
     Union,
     cast,
 )
@@ -81,7 +77,6 @@ import attr
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.validation import ValidationError, Validator
 from typing_extensions import Protocol
 
 from .types import (
@@ -119,8 +114,7 @@ class CompletionIterator_T(Protocol):
         fragments: List[str],
         complete_event: CompleteEvent,
         start_position: int = 0,
-    ) -> Generator[Completion, None, None]:
-        ...  # pragma: no cover
+    ) -> Generator[Completion, None, None]: ...  # pragma: no cover
 
 
 class ActionParamCompletionIterator_T(Protocol):
@@ -136,8 +130,7 @@ class ActionParamCompletionIterator_T(Protocol):
         param_value: str,
         complete_event: CompleteEvent,
         start_position: int = 0,
-    ) -> Generator[Completion, None, None]:
-        ...  # pragma: no cover
+    ) -> Generator[Completion, None, None]: ...  # pragma: no cover
 
 
 @attr.s
@@ -461,9 +454,9 @@ class ActionCompleter(Completer):
                 to the given parameter value
         """
 
-        assert isinstance(
-            action_param.source, str
-        ), f"basic param completions can only handle a string source, {action_param!r}"
+        assert isinstance(action_param.source, str), (
+            f"basic param completions can only handle a string source, {action_param!r}"
+        )
 
         if self._compare_string(param_value, action_param.source):
             yield self._build_completion(
@@ -495,7 +488,13 @@ class ActionCompleter(Completer):
                 respect to the given parameter value
         """
 
-        assert isinstance(action_param.source, (list, tuple,)), (
+        assert isinstance(
+            action_param.source,
+            (
+                list,
+                tuple,
+            ),
+        ), (
             "iterable param completions can only handle iterables of strings, "
             f"{action_param.source!r}"
         )
@@ -636,6 +635,46 @@ class ActionCompleter(Completer):
                 start_position=start_position,
             )
 
+    def _iter_empty_param_completions(
+        self,
+        action: Action,
+        action_param: ActionParam,
+        param_value: str,
+        complete_event: CompleteEvent,
+        start_position: int = 0,
+    ) -> Generator[Completion, None, None]:
+        """Iterate Empty action parameter completions.
+
+        Empty completions always show an empty completion (blank text) with the
+        help string (display_meta) visible. This is useful for parameters where you
+        want to provide help text without suggesting specific values.
+
+        Args:
+            action (Action): The action the parameter is tied to
+            action_param (ActionParam): The action parameter to generate completions for
+            param_value (str): The current value of the parameter
+            complete_event (CompleteEvent): The completion event for the completion
+            start_position (int, optional): The starting position for the generated
+                completions, defaults to 0
+
+        Yields:
+            Completion: An empty completion for the given action parameter with the
+                help text visible
+        """
+
+        from .types import Empty
+
+        assert action_param.source is Empty, (
+            "empty param completions will only handle parameters with source=Empty, "
+            f"{action_param.source!r}"
+        )
+
+        yield self._build_completion(
+            completable=action_param,
+            text="",
+            start_position=start_position,
+        )
+
     def _iter_action_completions(
         self,
         action: Action,
@@ -664,8 +703,12 @@ class ActionCompleter(Completer):
         for action_param, param_value in zip(
             action.params[param_offset:], fragments[param_offset:]
         ):
+            from .types import Empty
+
             completion_iterator: Optional[ActionParamCompletionIterator_T] = None
-            if isinstance(action_param.source, str):
+            if action_param.source is Empty:
+                completion_iterator = self._iter_empty_param_completions
+            elif isinstance(action_param.source, str):
                 completion_iterator = self._iter_basic_param_completions
             elif isinstance(
                 action_param.source,

@@ -1,28 +1,23 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "prompt-toolkit-action-completer"
-version = "1.1.1"
+version = "1.2.1"
 description = "A fairly simple method for registering callables as prompt-toolkit completions"
-authors = ["Stephen Bunn <stephen@bunn.io>"]
-maintainers = []
-license = "ISC"
-packages = [
-    { include = "action_completer", from = "src" }
-]
+authors = [{ name = "Stephen Bunn", email = "stephen@bunn.io" }]
+requires-python = "~=3.12"
 readme = "README.md"
-homepage = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
-repository = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
-documentation = "https://prompt-toolkit-action-completer-action-completer.readthedocs.io"
+license = "ISC"
+maintainers = []
 keywords = [
     "prompt-toolkit",
     "prompt",
     "toolkit",
     "completer",
     "validator",
-    "action"
+    "action",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -32,9 +27,58 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Natural Language :: English",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: ISC License (ISCL)"
+    "License :: OSI Approved :: ISC License (ISCL)",
 ]
+dependencies = [
+    "prompt-toolkit>=3.0.7,<4",
+    "attrs>=21.4.0,<22",
+    "fuzzywuzzy[speedup]>=0.18.0,<0.19",
+    "typing-extensions>=3.7.4",
+]
+
+[project.optional-dependencies]
+profile = []
+
+[project.urls]
+Homepage = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
+Repository = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
+Documentation = "https://prompt-toolkit-action-completer-action-completer.readthedocs.io"
+"Bug Tracker" = "https://github.com/stephen-bunn/prompt-toolkit-action-completer/issues"
+
+[dependency-groups]
+dev = [
+    "black~=24.0",
+    "check-manifest>=0.48,<0.49",
+    "colorama>=0.4.6,<0.5",
+    "coverage[toml]~=7.2",
+    "flake8~=7.0",
+    "flake8-docstrings~=1.7",
+    "hypothesis~=6.80",
+    "invoke~=2.0",
+    "isort~=5.12",
+    "mypy~=1.5",
+    "pre-commit~=3.3",
+    "pyprof2calltree>=1.4.5,<2",
+    "pytest~=8.0",
+    "pytest-cov~=4.1",
+    "pytest-flake8~=1.1",
+    "pytest-sugar~=1.0",
+    "pytest-xdist~=3.3",
+    "readme-renderer[md]~=40.0",
+    "rope~=1.10",
+    "sphinx~=7.3",
+    "toml>=0.10.2,<0.11",
+    "towncrier~=23.0",
+    "twine~=5.0",
+    "vprof>=0.38,<0.39",
+    "sphinx-rtd-theme~=2.0",
+    "sphinx-autodoc-typehints~=1.24",
+    "ipdb>=0.13.13,<0.14",
+]
+
+[tool.hatch.build.targets.sdist]
 include = [
+    "src/action_completer",
     "pyproject.toml",
     "LICENSE",
     "README*.rst",
@@ -48,50 +92,30 @@ exclude = [
     ".editorconfig",
     ".pre-commit-config.yaml",
     ".readthedocs.yaml",
-    "requirements*.txt"
+    "requirements*.txt",
 ]
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/stephen-bunn/prompt-toolkit-action-completer/issues"
+[tool.hatch.build.targets.wheel]
+include = [
+    "src/action_completer",
+    "pyproject.toml",
+    "LICENSE",
+    "README*.rst",
+    "README*.md",
+    "CHANGELOG.rst",
+    "CHANGELOG.md",
+    "CONTRIBUTING.rst",
+    "CONTRIBUTING.md",
+]
+exclude = [
+    ".editorconfig",
+    ".pre-commit-config.yaml",
+    ".readthedocs.yaml",
+    "requirements*.txt",
+]
 
-[tool.poetry.dependencies]
-python = "^3.7"
-prompt-toolkit = "^3.0.7"
-attrs = "^21.4.0"
-fuzzywuzzy = {extras = ["speedup"], version = "^0.18.0"}
-typing-extensions = ">=3.7.4"
-
-[tool.poetry.dev-dependencies]
-black = "^24.0"
-check-manifest = "^0.48"
-colorama = "^0.4.6"
-coverage = { version = "^7.2", extras = ["toml"] }
-flake8 = "^7.0"
-flake8-docstrings = "^1.7"
-hypothesis = "^6.80"
-invoke = "^2.0"
-isort = "^5.12"
-mypy = "^1.5"
-pre-commit = "^3.3"
-pyprof2calltree = { version = "^1.4.5", optional = true }
-pytest = "^8.0"
-pytest-cov = "^4.1"
-pytest-flake8 = "^1.1"
-pytest-sugar = "^1.0"
-pytest-xdist = "^3.3"
-readme-renderer = { version = "^40.0", extras = ["md"] }
-rope = "^1.10"
-sphinx = "^7.2"
-toml = "^0.10.2"
-towncrier = "^23.0"
-twine = "^5.0"
-vprof = { version = "^0.38", optional = true }
-sphinx-rtd-theme = "^2.0"
-sphinx-autodoc-typehints = "^1.24"
-ipdb = "^0.13.13"
-
-[tool.poetry.extras]
-profile = ["pyprof2calltree", "vprof"]
+[tool.hatch.build.targets.wheel.sources]
+"src/action_completer" = "action_completer"
 
 [tool.black]
 line-length = 88
@@ -153,7 +177,6 @@ showcontent = true
 directory = 'deprecation'
 name = 'Deprecations'
 showcontent = true
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
