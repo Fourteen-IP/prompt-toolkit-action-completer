@@ -214,6 +214,30 @@ class ActionCompleter(Completer):
         self.action = self.root.action
         self.param = param
 
+    def __getattr__(self, name: str):
+        """Delegate dynamic subgroup attribute access to the root group.
+
+        This allows chaining directly from the completer instance:
+
+            @completer.hello.world.action("ping")
+
+        Which is equivalent to:
+            hello_group = completer.group("hello")
+            world_group = hello_group.group("world")
+            @world_group.action("ping")
+            ...
+
+        Args:
+            name (str): The subgroup name requested via attribute access.
+
+        Returns:
+            ActionGroup: The existing or newly created subgroup.
+        """
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            return getattr(self.root, name)
+
     def _compare_string(self, partial_string: str, full_string: str) -> bool:
         """Check if a source string is contained within a target string.
 
