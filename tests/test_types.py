@@ -4,17 +4,16 @@
 
 """Contains tests regarded to the functionality provided in types."""
 
-
 from string import whitespace
 from typing import List
 
 import pytest
 from hypothesis import assume, given
-from hypothesis.strategies import builds, lists, one_of, text
+from hypothesis.strategies import lists, one_of, text
 
 from action_completer import types, utils
 
-from .strategies import action, action_group, action_param, fragment
+from .strategies import action_group, action_param, fragment
 
 
 @given(one_of(text(max_size=0), text(alphabet=whitespace)))
@@ -152,3 +151,35 @@ def test_param_warns_on_failure_to_apply_parameter_to_action(
         assert False, "Invalid state where action is not supplied parameters"
 
     assert len(created_action.params) == 0
+
+
+def test_ActionGroup_dynamic_attribute_creates_subgroups():
+    root = types.ActionGroup(children={})
+    # First access creates subgroup
+    assert "hello" not in root.children
+    hello = root.hello
+    assert isinstance(hello, types.ActionGroup)
+    assert "hello" in root.children
+    assert root.children["hello"] is hello
+
+
+def test_ActionGroup_dynamic_attribute_chaining_creates_nested_structure():
+    root = types.ActionGroup(children={})
+    leaf = root.hello.world
+    assert isinstance(leaf, types.ActionGroup)
+    assert "hello" in root.children
+    assert isinstance(root.children["hello"], types.ActionGroup)
+    assert "world" in root.children["hello"].children
+    assert root.children["hello"].children["world"] is leaf
+
+
+def test_ActionGroup_dynamic_attribute_conflict_with_action_raises():
+    root = types.ActionGroup(children={})
+
+    # Register an action named 'run'
+    @root.action("run")
+    def _run():
+        return None
+
+    with pytest.raises(AttributeError):
+        _ = root.run

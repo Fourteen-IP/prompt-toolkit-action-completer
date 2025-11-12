@@ -226,6 +226,63 @@ class ActionGroup:
     display_meta: Optional[LazyText_T] = attr.ib(default=None)
     active: Optional[Filter] = attr.ib(default=None)
 
+    def __getattr__(self, name: str) -> "ActionGroup":
+        """Dynamically create or return a subgroup via attribute access.
+
+        This enables ergonomic decorator chains like:
+
+            @root.hello.world.action("do_thing")
+
+        Behavior:
+        - If a child group with the attribute name exists, return it.
+        - If a child action with the attribute name exists, raise AttributeError
+          to avoid shadowing the action with a group.
+        - Otherwise, create a new subgroup with that name, register it in
+          ``children``, attach it as an attribute, and return it.
+
+        Args:
+            name (str): The attribute name used as the subgroup key.
+
+        Returns:
+            ActionGroup: The existing or newly created subgroup.
+        """
+
+        # Allow normal attribute access for attrs-defined fields and methods
+        if name in (
+            "children",
+            "style",
+            "selected_style",
+            "display",
+            "display_meta",
+            "active",
+            "group",
+            "action",
+        ):
+            raise AttributeError(name)
+
+        # Validate name similar to .group()
+        if len(name) <= 0:
+            raise AttributeError("group attribute names must contain characters")
+        if re.findall(r"\s+", name):
+            raise AttributeError(
+                f"group attribute names cannot include whitespace, {name!r}"
+            )
+
+        # If already present, return if group; error if action
+        if name in self.children:
+            existing = self.children[name]
+            if isinstance(existing, ActionGroup):
+                # cache attribute for faster subsequent access
+                setattr(self, name, existing)
+                return existing
+            raise AttributeError(f"attribute {name!r} conflicts with existing action")
+
+        # Create, register, and cache new subgroup
+        subgroup = ActionGroup(children={})
+        self.children[name] = subgroup
+        setattr(self, name, subgroup)
+        return subgroup
+
     @children.validator
     def _children_validator(self, attribute: attr.Attribute, value: dict):
         """Validate the children attribute for the group on instance creation.
