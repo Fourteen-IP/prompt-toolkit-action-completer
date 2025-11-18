@@ -706,20 +706,7 @@ class ActionCompleter(Completer):
         complete_event: CompleteEvent,
         start_position: int = 0,
     ) -> Generator[Completion, None, None]:
-        """Iterate completions for a given :class:`~type.Action`.
-
-        Args:
-            action (Action): The action to generate completions for
-            fragments (List[str]): The current list of extracted prompt fragments
-            complete_event (CompleteEvent): The completion event for the completion
-            start_position (int, optional): The starting position for the generated
-                completions, defaults to 0
-
-        Yields:
-            Completion: A completion for the given action group with respect to the
-                given prompt fragments
-        """
-
+        """Iterate completions for a given :class:`~type.Action`."""
         if action.params is None:
             return
 
@@ -750,30 +737,20 @@ class ActionCompleter(Completer):
                 completion_iterator = self._iter_none_param_completions
 
             if completion_iterator is not None:
+                # Replace only the current parameter token
+                local_start = -len(param_value or "")
                 yield from completion_iterator(
                     action,
                     action_param,
                     param_value,
                     complete_event,
-                    start_position,
+                    start_position=local_start,
                 )
 
     def get_completions(
         self, document: Document, complete_event: CompleteEvent
     ) -> Generator[Completion, None, None]:
-        """Generate completions for the given prompt document.
-
-        Args:
-            document (~prompt_toolkit.document.Document): The document directly from
-                the prompt to generate completions for
-            complete_event (~prompt_toolkit.completion.CompleteEvent): The completion
-                event for the completions
-
-        Yields:
-            prompt_toolkit.completion.Completion:
-                A completion for the given prompt document
-        """
-
+        """Generate completions for the given prompt document."""
         _, _, completable, fragments = extract_context(
             self.root, get_fragments(document.text)
         )
@@ -781,21 +758,17 @@ class ActionCompleter(Completer):
         if len(fragments) <= 0:
             return
 
-        # this starting position is NOT the same as len(document.text)
-        start_position = -len(" ".join(fragments))
-        completion_iterator: Optional[CompletionIterator_T] = None
         if isinstance(completable, ActionGroup):
-            completion_iterator = cast(
-                CompletionIterator_T, self._iter_group_completions
-            )
-        elif isinstance(completable, Action):
-            completion_iterator = cast(
-                CompletionIterator_T, self._iter_action_completions
-            )
-
-        if completion_iterator:
-            for completion in completion_iterator(
+            # Replace only the current token (group/action name)
+            start_position = -len(fragments[-1])
+            for completion in self._iter_group_completions(
                 completable, fragments, complete_event, start_position=start_position
+            ):
+                completion.text = encode_completion(completion.text)
+                yield completion
+        elif isinstance(completable, Action):
+            for completion in self._iter_action_completions(
+                completable, fragments, complete_event
             ):
                 completion.text = encode_completion(completion.text)
                 yield completion
