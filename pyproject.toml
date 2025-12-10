@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "prompt-toolkit-action-completer"
+name = "fourteen-prompt-toolkit-action-completer"
 version = "1.2.2"
-description = "A fairly simple method for registering callables as prompt-toolkit completions"
+description = "A fairly simple method for registering callables as prompt-toolkit completions (Fourteen fork)"
 authors = [{ name = "Stephen Bunn", email = "stephen@bunn.io" }]
 requires-python = "~=3.12"
 readme = "README.md"
@@ -40,10 +40,10 @@ dependencies = [
 profile = []
 
 [project.urls]
-Homepage = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
-Repository = "https://github.com/stephen-bunn/prompt-toolkit-action-completer"
+Homepage = "https://github.com/Fourteen-IP/prompt-toolkit-action-completer"
+Repository = "https://github.com/Fourteen-IP/prompt-toolkit-action-completer"
 Documentation = "https://prompt-toolkit-action-completer-action-completer.readthedocs.io"
-"Bug Tracker" = "https://github.com/stephen-bunn/prompt-toolkit-action-completer/issues"
+"Bug Tracker" = "https://github.com/Fourteen-IP/prompt-toolkit-action-completer/issues"
 
 [dependency-groups]
 dev = [
@@ -139,8 +139,8 @@ package = "action_completer"
 package_dir = "src"
 filename = "CHANGELOG.rst"
 directory = "changes/"
-title_format = "`{version} <https://github.com/stephen-bunn/prompt-toolkit-action-completer/releases/tag/v{version}>`_ (*{project_date}*)"
-issue_format = '`#{issue} <https://github.com/stephen-bunn/prompt-toolkit-action-completer/issues/{issue}>`_'
+title_format = "`{version} <https://github.com/Fourteen-IP/prompt-toolkit-action-completer/releases/tag/v{version}>`_ (*{project_date}*)"
+issue_format = '`#{issue} <https://github.com/Fourteen-IP/prompt-toolkit-action-completer/issues/{issue}>`_'
 template = 'tasks/CHANGELOG.rst.jinja2'
 
 [[tool.towncrier.type]]
