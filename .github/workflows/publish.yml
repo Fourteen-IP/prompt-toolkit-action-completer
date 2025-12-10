@@ -45,13 +45,3 @@ jobs:
         with:
           print-hash: true
           verbose: true
-
-      - name: Create Git tag (if version was specified)
-        if: ${{ github.event.inputs.version != '' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
-          git push origin "v${{ github.event.inputs.version }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
